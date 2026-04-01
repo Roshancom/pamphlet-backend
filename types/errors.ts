@@ -21,8 +21,15 @@ export class NotFoundException extends AppError {
 }
 
 export class BadRequestException extends AppError {
-  constructor(message: string) {
+  constructor(message?: string) {
     super(message || 'Bad Request Exception', 400);
     Object.setPrototypeOf(this, BadRequestException.prototype);
+  }
+}
+
+export class UnAuthorizedException extends AppError {
+  constructor(message?: string) {
+    super(message || 'Unauthorized Exception', 401);
+    Object.setPrototypeOf(this, UnAuthorizedException.prototype);
   }
 }
