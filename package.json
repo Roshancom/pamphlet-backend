@@ -5,7 +5,7 @@
   "main": "dist/server/server.js",
   "type": "module",
   "scripts": {
-    "dev": "tsx server/server.ts",
+    "dev": "tsx watch server/server.ts",
     "build": "tsc",
     "start": "rm -rf dist && npm run build && node dist/server/server.js",
     "format": "prettier --write .",
@@ -27,7 +27,8 @@
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.6.5",
-    "sequelize": "^6.37.8"
+    "sequelize": "^6.37.8",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -39,6 +40,7 @@
     "nodemon": "^3.1.14",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
+    "tsx": "^4.21.0",
     "typescript": "^5.3.3"
   }
 }

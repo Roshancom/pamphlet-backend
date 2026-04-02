@@ -7,6 +7,21 @@ import {
   updatePamphlet,
   deletePamphlet,
 } from '../controllers/pamphletController.js';
+import { validationMiddleware } from 'middleware/validationMiddleware.js';
+import z from 'zod';
+
+const pamphletSchema = z.object({
+  title: z.string().nonempty('Title is required'),
+  description: z.string().min(1, 'Description is required').optional(),
+  category: z.string().nonempty('Category is required'),
+  location: z.string().min(1, 'Location is required'),
+  image_url: z.string().optional(),
+  url_key: z.string().nonempty('URL Key is required'),
+  number: z
+    .number()
+    .min(2, 'Number of pamphlets must be at least 2')
+    .max(10, 'Number of pamphlets must be at most 10'),
+});
 
 const router = express.Router();
 
@@ -30,7 +45,12 @@ router.get('/:url_key', getPamphletByUrlKey);
  * Create a new pamphlet
  * Protected route - requires authentication
  */
-router.post('/', authMiddleware, createPamphlet);
+router.post(
+  '/',
+  authMiddleware,
+  validationMiddleware(pamphletSchema),
+  createPamphlet,
+);
 
 /**
  * PUT /api/pamphlets/:id

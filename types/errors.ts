@@ -33,3 +33,10 @@ export class UnAuthorizedException extends AppError {
     Object.setPrototypeOf(this, UnAuthorizedException.prototype);
   }
 }
+
+export class UnprocessableEntityException extends AppError {
+  constructor(message?: string) {
+    super(message || 'Unprocessable Entity Exception', 422);
+    Object.setPrototypeOf(this, UnprocessableEntityException.prototype);
+  }
+}

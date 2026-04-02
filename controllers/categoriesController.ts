@@ -2,6 +2,7 @@ import { Response } from 'express';
 import pool from '../config/db.js';
 import { asyncHandler } from '../utils/asyncHandlers.js';
 import { RowDataPacket } from 'mysql2';
+import { successResponse } from 'utils/helpers.js';
 
 interface Category extends RowDataPacket {
   id: number;
@@ -22,10 +23,6 @@ export const getAllCategories = asyncHandler(
 
     connection.release();
 
-    res.status(200).json({
-      success: true,
-      count: categories.length,
-      data: categories,
-    });
+    successResponse(res, 200, categories);
   },
 );

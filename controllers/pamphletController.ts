@@ -11,6 +11,7 @@ import {
 import { RowDataPacket } from 'mysql2/promise';
 import { asyncHandler } from '../utils/asyncHandlers.js';
 import { NotFoundException } from '../types/errors.js';
+import { successResponse } from 'utils/helpers.js';
 
 /**
  * Get all pamphlets with pagination and filtering
@@ -345,12 +346,7 @@ export const updatePamphlet = asyncHandler(
 
     connection.release();
 
-    const response: ApiResponse<null> = {
-      success: true,
-      message: 'Pamphlet updated successfully.',
-    };
-
-    res.status(200).json(response);
+    successResponse(res, 200, null, 'Pamphlet updated successfully.');
   },
 );
 

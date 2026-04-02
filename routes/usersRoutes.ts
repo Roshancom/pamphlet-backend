@@ -1,4 +1,4 @@
-import { protect } from '../controllers/authController.js';
+import { protect } from '../middleware/protectMiddleware.js';
 import { getUserById, getUsers } from '../controllers/usersController.js';
 import express from 'express';
 
