@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
+
 import jwt from 'jsonwebtoken';
-import { UnAuthorizedException } from 'types/errors.js';
+import { UnAuthorizedException } from '../types/errors.js';
 import { JwtPayload } from '../types/index.js';
 
 /**
@@ -12,11 +13,16 @@ import { JwtPayload } from '../types/index.js';
  */
 const authMiddleware = (
   req: Request,
-  res: Response,
+  _: Response,
   next: NextFunction,
 ): void => {
   try {
-    const token = req.headers.authorization?.split(' ')[1];
+    let token: string | undefined;
+
+    // Check Authorization header
+    if (req.headers.authorization?.startsWith('Bearer')) {
+      token = req.headers.authorization.split(' ')[1];
+    }
 
     const decoded = jwt.verify(
       token || '',

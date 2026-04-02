@@ -1,8 +1,8 @@
-import express, { Request, Response } from 'express';
+import express from 'express';
 
 import authRoutes from './authRoutes.js';
-import pamphletRoutes from './pamphletRoutes.js';
 import categoriesRoutes from './categoriesRoutes.js';
+import pamphletRoutes from './pamphletRoutes.js';
 import usersRoutes from './usersRoutes.js';
 
 const rootRouter = express.Router();

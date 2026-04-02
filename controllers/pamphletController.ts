@@ -137,12 +137,13 @@ export const getPamphletByUrlKey = asyncHandler(
       [url_key],
     );
 
-    if ((pamphletResult as RowDataPacket[]).length === 0) {
+    if (!pamphletResult.length) {
       connection.release();
+
       throw new NotFoundException();
     }
 
-    const pamphlet = pamphletResult[0] as PamphletWithAuthor;
+    const pamphlet = pamphletResult[0];
 
     // Fetch images
     const [imagesResult] = await connection.query<

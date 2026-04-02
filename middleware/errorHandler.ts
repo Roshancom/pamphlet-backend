@@ -1,6 +1,7 @@
-import { Request, Response, NextFunction } from 'express';
-import { ErrorResponse } from '../types/index.js';
+import { NextFunction, Request, Response } from 'express';
+
 import { AppError } from '../types/errors.js';
+import { ErrorResponse } from '../types/index.js';
 
 /**
  * Global error handling middleware

@@ -1,11 +1,11 @@
-import { protect } from '../middleware/protectMiddleware.js';
-import { getUserById, getUsers } from '../controllers/usersController.js';
 import express from 'express';
+import { getUserById, getUsers } from '../controllers/usersController.js';
+import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-router.get('/', protect, getUsers);
+router.get('/', authMiddleware, getUsers);
 
-router.get('/:id', protect, getUserById);
+router.get('/:id', authMiddleware, getUserById);
 
 export default router;
