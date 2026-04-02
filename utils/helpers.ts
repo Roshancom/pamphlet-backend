@@ -1,6 +1,7 @@
 // utils/response.ts
 
 import { Response } from 'express';
+import { ERROR, SUCCESS } from '../constants/index.js';
 
 // Generic API response type
 interface ApiResponse<T> {
@@ -35,35 +36,23 @@ export const errorResponse = (
   });
 };
 
-// Email validation
-export const validateEmail = (email: string): boolean => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
-};
-
-// Password validation
-export const validatePassword = (password: string): boolean => {
-  return !!password && password.length >= 6;
-};
-
-// Payload validation result type
-interface ValidationResult {
-  isValid: boolean;
-  missingFields: string[];
-}
-
-// Payload type (dynamic object)
-type Payload = Record<string, unknown>;
-
-// Request payload validator
-export const validatePayload = (
-  payload: Payload,
-  requiredFields: string[],
-): ValidationResult => {
-  const missingFields = requiredFields.filter((field) => !payload[field]);
-
-  return {
-    isValid: missingFields.length === 0,
-    missingFields,
-  };
+// custom error and success message
+export const errorSuccessMessage = ({
+  message,
+  res,
+  status,
+  errors,
+  type,
+}: {
+  res: Response;
+  status: number;
+  type: typeof ERROR | typeof SUCCESS;
+  errors?: string | Array<Record<string, string>>;
+  message: string;
+}): Response<ApiResponse<null>> => {
+  return res.status(status).json({
+    success: type === SUCCESS ? true : false,
+    message,
+    ...(type === ERROR ? { errors } : {}),
+  });
 };

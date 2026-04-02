@@ -13,13 +13,6 @@ export class AppError extends Error {
   }
 }
 
-export class NotFoundException extends AppError {
-  constructor() {
-    super('Not found Exception', 404);
-    Object.setPrototypeOf(this, NotFoundException.prototype);
-  }
-}
-
 export class BadRequestException extends AppError {
   constructor(message?: string) {
     super(message || 'Bad Request Exception', 400);
@@ -31,6 +24,20 @@ export class UnAuthorizedException extends AppError {
   constructor(message?: string) {
     super(message || 'Unauthorized Exception', 401);
     Object.setPrototypeOf(this, UnAuthorizedException.prototype);
+  }
+}
+
+export class ForbiddenException extends AppError {
+  constructor(message?: string) {
+    super(message || 'Forbidden Exception', 403);
+    Object.setPrototypeOf(this, ForbiddenException.prototype);
+  }
+}
+
+export class NotFoundException extends AppError {
+  constructor(message?: string) {
+    super(message || 'Not found Exception', 404);
+    Object.setPrototypeOf(this, NotFoundException.prototype);
   }
 }
 

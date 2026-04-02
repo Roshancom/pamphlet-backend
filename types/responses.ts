@@ -17,8 +17,6 @@ export interface ApiResponse<T = unknown> {
  * Paginated API response
  */
 export interface PaginatedApiResponse<T> {
-  success: boolean;
-  message?: string;
   data: T[];
   page: number;
   limit: number;

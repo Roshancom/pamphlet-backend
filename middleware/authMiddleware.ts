@@ -1,5 +1,6 @@
-import { Request, Response, NextFunction } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
+import { UnAuthorizedException } from 'types/errors.js';
 import { JwtPayload } from '../types/index.js';
 
 /**
@@ -17,26 +18,17 @@ const authMiddleware = (
   try {
     const token = req.headers.authorization?.split(' ')[1];
 
-    if (!token) {
-      res.status(401).json({
-        success: false,
-        message: 'No token provided. Authorization denied.',
-      });
-      return;
-    }
-
     const decoded = jwt.verify(
-      token,
+      token || '',
       process.env.JWT_SECRET || 'your-secret-key',
     ) as JwtPayload;
 
     req.user = decoded;
     next();
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
-    res.status(401).json({
-      success: false,
-      message: 'Invalid or expired token.',
-    });
+    next(new UnAuthorizedException('Invalid or expired token.'));
   }
 };
 

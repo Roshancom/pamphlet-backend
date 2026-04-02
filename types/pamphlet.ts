@@ -40,8 +40,8 @@ export interface PamphletWithAuthor extends Pamphlet {
  */
 export interface PamphletPayload {
   title?: string;
-  description?: string;
-  image_url?: string;
+  short_description?: string;
+  thumbnail_image?: string;
   category?: string;
   location?: string;
   url_key: string;
@@ -53,7 +53,7 @@ export interface PamphletPayload {
 export interface PamphletResponse {
   id: number;
   title: string;
-  description: string;
+  short_description: string;
   image_url: string | null;
   category: string;
   location: string;

@@ -1,16 +1,11 @@
-import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
+import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import pool from '../config/db.js';
-import {
-  UserPayload,
-  User,
-  LoginResponse,
-  ApiResponse,
-} from '../types/index.js';
-import { RowDataPacket } from 'mysql2/promise';
-import { successResponse } from '../utils/helpers.js';
+import { UnAuthorizedException } from '../types/errors.js';
+import { ApiResponse, User, UserPayload } from '../types/index.js';
 import { asyncHandler } from '../utils/asyncHandlers.js';
+import { successResponse } from '../utils/helpers.js';
 
 /**
  * Register a new user
@@ -21,15 +16,6 @@ export const register = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { name, email, password }: UserPayload = req.body;
 
-    // Validation
-    if (!name || !email || !password) {
-      res.status(400).json({
-        success: false,
-        message: 'Please provide name, email, and password.',
-      });
-      return;
-    }
-
     // Check if user already exists
     const connection = await pool.getConnection();
     const [existingUser] = await connection.query<User[]>(
@@ -37,13 +23,12 @@ export const register = asyncHandler(
       [email],
     );
 
-    if ((existingUser as RowDataPacket[]).length > 0) {
+    console.log({ existingUser });
+
+    if (existingUser.length > 0) {
       connection.release();
-      res.status(400).json({
-        success: false,
-        message: 'Email already registered.',
-      });
-      return;
+
+      throw new UnAuthorizedException('Email already registered.');
     }
 
     // Hash password
@@ -75,15 +60,6 @@ export const login = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { email, password }: UserPayload = req.body;
 
-    // Validation
-    if (!email || !password) {
-      res.status(400).json({
-        success: false,
-        message: 'Please provide email and password.',
-      });
-      return;
-    }
-
     // Get user from database
     const connection = await pool.getConnection();
     const [users] = await connection.query<User[]>(
@@ -93,27 +69,16 @@ export const login = asyncHandler(
 
     connection.release();
 
-    const usersList = users as RowDataPacket[];
-
-    if (usersList.length === 0) {
-      res.status(401).json({
-        success: false,
-        message: 'Invalid email or password.',
-      });
-      return;
-    }
-
-    const user = usersList[0] as User;
+    const user = users?.[0];
 
     // Compare password
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await bcrypt.compare(
+      password,
+      user?.password || '', //handle undefined user case by providing empty string to compare
+    );
 
-    if (!isPasswordValid) {
-      res.status(401).json({
-        success: false,
-        message: 'Invalid email or password.',
-      });
-      return;
+    if (!isPasswordValid || !user) {
+      throw new UnAuthorizedException('Invalid email or password.');
     }
 
     // Generate JWT token
@@ -122,7 +87,7 @@ export const login = asyncHandler(
       process.env.JWT_SECRET || 'your-secret-key',
     );
 
-    const response: LoginResponse = {
+    const response = {
       success: true,
       message: 'Login successful.',
       token,
@@ -133,6 +98,6 @@ export const login = asyncHandler(
       },
     };
 
-    res.status(200).json(response);
+    successResponse(res, 200, response, 'Login successful.');
   },
 );

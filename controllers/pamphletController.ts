@@ -1,17 +1,21 @@
 import { Request, Response } from 'express';
-import pool from '../config/db.js';
-import {
-  Pamphlet,
-  PamphletWithAuthor,
-  PamphletPayload,
-  CountResult,
-  ApiResponse,
-  PaginatedApiResponse,
-} from '../types/index.js';
 import { RowDataPacket } from 'mysql2/promise';
+import pool from '../config/db.js';
+import { SUCCESS } from '../constants/result.constants.js';
+import {
+  ForbiddenException,
+  NotFoundException,
+  UnAuthorizedException,
+} from '../types/errors.js';
+import {
+  CountResult,
+  PaginatedApiResponse,
+  Pamphlet,
+  PamphletPayload,
+  PamphletWithAuthor,
+} from '../types/index.js';
 import { asyncHandler } from '../utils/asyncHandlers.js';
-import { NotFoundException } from '../types/errors.js';
-import { successResponse } from 'utils/helpers.js';
+import { errorSuccessMessage, successResponse } from '../utils/helpers.js';
 
 /**
  * Get all pamphlets with pagination and filtering
@@ -70,7 +74,7 @@ export const getAllPamphlets = asyncHandler(
         p.id, 
         p.title, 
         p.short_description, 
-        p.image_url, 
+        p.thumbnail_image, 
         p.category, 
         p.location, 
         p.user_id, 
@@ -88,7 +92,6 @@ export const getAllPamphlets = asyncHandler(
     connection.release(); // important
 
     const response: PaginatedApiResponse<PamphletWithAuthor> = {
-      success: true,
       data: pamphlets,
       page,
       limit,
@@ -96,7 +99,12 @@ export const getAllPamphlets = asyncHandler(
       totalPages: Math.ceil(total / limit),
     };
 
-    res.status(200).json(response);
+    successResponse<PaginatedApiResponse<PamphletWithAuthor>>(
+      res,
+      200,
+      response,
+      'Pamphlets retrieved successfully.',
+    );
   },
 );
 
@@ -174,27 +182,14 @@ export const getPamphletByUrlKey = asyncHandler(
     connection.release();
 
     // Construct response
-    const response: ApiResponse<
-      PamphletWithAuthor & {
-        images: string[];
-        contact: { phone: string; whatsapp: string; email: string } | null;
-        store_location: {
-          address: string;
-          latitude: number;
-          longitude: number;
-        } | null;
-      }
-    > = {
-      success: true,
-      data: {
-        ...pamphlet,
-        images: imagesResult.map((img) => img.image_url),
-        contact,
-        store_location,
-      },
+    const response = {
+      ...pamphlet,
+      images: imagesResult.map((img) => img.image_url),
+      contact,
+      store_location,
     };
 
-    res.status(200).json(response);
+    successResponse(res, 200, response, 'Pamphlet retrieved successfully.');
   },
 );
 
@@ -208,8 +203,8 @@ export const createPamphlet = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const {
       title,
-      description,
-      image_url,
+      short_description,
+      thumbnail_image,
       category,
       location,
       url_key,
@@ -217,30 +212,17 @@ export const createPamphlet = asyncHandler(
     const userId = req.user?.id;
 
     if (!userId) {
-      res.status(401).json({
-        success: false,
-        message: 'Authentication required.',
-      });
-      return;
-    }
-
-    // Validation
-    if (!title || !category || !location || !url_key) {
-      res.status(400).json({
-        success: false,
-        message: 'Please provide title, category, location, and URL key.',
-      });
-      return;
+      throw new NotFoundException('User not found');
     }
 
     const connection = await pool.getConnection();
-    const [result] = await connection.query(
-      `INSERT INTO pamphlets (title, description, image_url, category, location, user_id, url_key) 
+    await connection.query(
+      `INSERT INTO pamphlets (title, short_description, thumbnail_image, category, location, user_id, url_key) 
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [
         title,
-        description,
-        image_url || null,
+        short_description,
+        thumbnail_image || null,
         category,
         location,
         userId,
@@ -250,31 +232,12 @@ export const createPamphlet = asyncHandler(
 
     connection.release();
 
-    const insertResult = result as { insertId: number };
-
-    const response: ApiResponse<{
-      id: number;
-      title?: string;
-      description?: string;
-      image_url?: string | null;
-      category?: string;
-      location?: string;
-      user_id: number;
-    }> = {
-      success: true,
+    errorSuccessMessage({
+      res,
+      status: 201,
       message: 'Pamphlet created successfully.',
-      data: {
-        id: insertResult.insertId,
-        title,
-        description,
-        image_url,
-        category,
-        location,
-        user_id: userId,
-      },
-    };
-
-    res.status(201).json(response);
+      type: SUCCESS,
+    });
   },
 );
 
@@ -289,19 +252,15 @@ export const updatePamphlet = asyncHandler(
     const { id } = req.params;
     const {
       title,
-      description,
-      image_url,
+      short_description,
+      thumbnail_image,
       category,
       location,
     }: PamphletPayload = req.body;
     const userId = req.user?.id;
 
     if (!userId) {
-      res.status(401).json({
-        success: false,
-        message: 'Authentication required.',
-      });
-      return;
+      throw new UnAuthorizedException('User  not found');
     }
 
     // Get pamphlet first
@@ -311,37 +270,31 @@ export const updatePamphlet = asyncHandler(
       [id],
     );
 
-    if ((pamphlets as RowDataPacket[]).length === 0) {
+    if (!pamphlets.length) {
       connection.release();
-      res.status(404).json({
-        success: false,
-        message: 'Pamphlet not found.',
-      });
-      return;
+
+      throw new NotFoundException('Pamphlet not found');
     }
 
-    const pamphlet = pamphlets[0] as RowDataPacket as Pamphlet;
-
     // Check ownership
-    if (pamphlet.user_id !== userId) {
+    if (pamphlets[0].user_id !== userId) {
       connection.release();
-      res.status(403).json({
-        success: false,
-        message: 'You are not authorized to update this pamphlet.',
-      });
-      return;
+
+      throw new ForbiddenException(
+        'You are not authorized to update this pamphlet.',
+      );
     }
 
     // Update pamphlet
     await connection.query(
       `UPDATE pamphlets 
        SET title = COALESCE(?, title), 
-           description = COALESCE(?, description),
-           image_url = COALESCE(?, image_url),
+           short_description = COALESCE(?, short_description),
+           thumbnail_image = COALESCE(?, thumbnail_image),
            category = COALESCE(?, category),
            location = COALESCE(?, location)
        WHERE id = ?`,
-      [title, description, image_url, category, location, id],
+      [title, short_description, thumbnail_image, category, location, id],
     );
 
     connection.release();
@@ -362,11 +315,7 @@ export const deletePamphlet = asyncHandler(
     const userId = req.user?.id;
 
     if (!userId) {
-      res.status(401).json({
-        success: false,
-        message: 'Authentication required.',
-      });
-      return;
+      throw new UnAuthorizedException('User not found');
     }
 
     // Get pamphlet first
@@ -376,25 +325,19 @@ export const deletePamphlet = asyncHandler(
       [id],
     );
 
-    if ((pamphlets as RowDataPacket[]).length === 0) {
+    if (!pamphlets.length) {
       connection.release();
-      res.status(404).json({
-        success: false,
-        message: 'Pamphlet not found.',
-      });
-      return;
+
+      throw new NotFoundException('Pamphlet not found');
     }
 
-    const pamphlet = pamphlets[0] as RowDataPacket as Pamphlet;
-
     // Check ownership
-    if (pamphlet.user_id !== userId) {
+    if (pamphlets[0].user_id !== userId) {
       connection.release();
-      res.status(403).json({
-        success: false,
-        message: 'You are not authorized to delete this pamphlet.',
-      });
-      return;
+
+      throw new ForbiddenException(
+        'You are not authorized to delete this pamphlet.',
+      );
     }
 
     // Delete pamphlet
@@ -402,11 +345,11 @@ export const deletePamphlet = asyncHandler(
 
     connection.release();
 
-    const response: ApiResponse<null> = {
-      success: true,
+    errorSuccessMessage({
+      res,
+      status: 200,
       message: 'Pamphlet deleted successfully.',
-    };
-
-    res.status(200).json(response);
+      type: SUCCESS,
+    });
   },
 );
