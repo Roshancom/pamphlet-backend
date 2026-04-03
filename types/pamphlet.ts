@@ -16,23 +16,17 @@ export enum PamphletCategory {
 /**
  * Pamphlet interface representing a pamphlet in the database
  */
-export interface Pamphlet extends RowDataPacket {
+export interface Pamphlet {
   id: number;
-  title: string;
-  description: string;
-  image_url: string | null;
-  category: string;
-  location: string;
-  user_id: number;
-  created_at: Date;
-  updated_at: Date;
-}
-
-/**
- * Pamphlet with author information (from JOIN query)
- */
-export interface PamphletWithAuthor extends Pamphlet {
-  author_name: string;
+  title: string | null;
+  short_description: string | null;
+  thumbnail_image: string | null;
+  category: string | null;
+  location: string | null;
+  user_id: number | null;
+  created_at: Date | null;
+  url_key: string | null;
+  author_name: string | null;
 }
 
 /**

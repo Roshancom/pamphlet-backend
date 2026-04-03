@@ -1,29 +1,20 @@
 import { Request, Response } from 'express';
 
+import { getUsers, getUsersById } from '../services/users.services.js';
 import { asyncHandler } from '../utils/asyncHandlers.js';
-import pool from '../config/db.js';
 import { successResponse } from '../utils/helpers.js';
 
-export const getUsers = asyncHandler(async (req: Request, res: Response) => {
-  const connection = await pool.getConnection();
-  const [users] = await connection.query(
-    'SELECT id, name, email, created_at FROM users',
-  );
-  connection.release();
+export const getUsersHandler = asyncHandler(
+  async (_: Request, res: Response) => {
+    const result = await getUsers();
+    successResponse(res, 200, result, 'User retrieved successfully.');
+  },
+);
 
-  successResponse(res, 200, users, 'Users retrieved successfully.');
-});
-
-export const getUserById = asyncHandler(
+export const getUserByIdHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
-
-    const connection = await pool.getConnection();
-    const [users] = await connection.query(
-      'SELECT id, name, email, created_at FROM users WHERE id = ?',
-      [id],
-    );
-    connection.release();
-    successResponse(res, 200, users, 'User retrieved successfully.');
+    const result = await getUsersById(Number(id));
+    successResponse(res, 200, result, 'User retrieved successfully.');
   },
 );

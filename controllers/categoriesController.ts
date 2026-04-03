@@ -1,28 +1,13 @@
 import { Response } from 'express';
-import pool from '../config/db.js';
-import { asyncHandler } from '../utils/asyncHandlers.js';
-import { RowDataPacket } from 'mysql2';
-import { successResponse } from 'utils/helpers.js';
 
-interface Category extends RowDataPacket {
-  id: number;
-  name: string;
-  slug: string;
-  created_at: string;
-}
+import { getCategories } from '../services/categories.services.js';
+import { asyncHandler } from '../utils/asyncHandlers.js';
+import { successResponse } from '../utils/helpers.js';
 
 export const getAllCategories = asyncHandler(
   async (_, res: Response): Promise<void> => {
-    const connection = await pool.getConnection();
+    const result = await getCategories();
 
-    const [categories] = await connection.query<Category[]>(
-      `SELECT id, name, slug, created_at
-       FROM categories
-       ORDER BY name ASC`,
-    );
-
-    connection.release();
-
-    successResponse(res, 200, categories);
+    successResponse(res, 200, result);
   },
 );

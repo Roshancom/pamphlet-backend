@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
+import db from '../db/index.js';
 import app from './app.js';
-import pool from '../config/db.js';
 
 dotenv.config();
 
@@ -13,9 +13,9 @@ const PORT = process.env.PORT || 5000;
 const startServer = async (): Promise<void> => {
   try {
     // Test database connection
-    const connection = await pool.getConnection();
-    console.log('✓ Database connected successfully');
-    connection.release();
+    await db.execute('SELECT 1');
+
+    console.log('Database connected successfully');
 
     // Start Express server
     app.listen(PORT, () => {

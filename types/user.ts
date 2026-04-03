@@ -15,7 +15,7 @@ export interface User extends RowDataPacket {
  * User payload for registration and login requests
  */
 export interface UserPayload {
-  name?: string;
+  name: string;
   email: string;
   password: string;
 }

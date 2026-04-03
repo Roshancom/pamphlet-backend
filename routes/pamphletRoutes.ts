@@ -2,10 +2,10 @@ import express from 'express';
 
 import {
   createPamphlet,
-  deletePamphlet,
+  deletePamphletHandler,
   getAllPamphlets,
   getPamphletByUrlKey,
-  updatePamphlet,
+  updatePamphletHandler,
 } from '../controllers/pamphletController.js';
 import authMiddleware from '../middleware/authMiddleware.js';
 import { validationMiddleware } from '../middleware/validationMiddleware.js';
@@ -45,13 +45,13 @@ router.post(
  * Update a pamphlet
  * Protected route - requires authentication and ownership
  */
-router.put('/:id', authMiddleware, updatePamphlet);
+router.put('/:id', authMiddleware, updatePamphletHandler);
 
 /**
  * DELETE /api/pamphlets/:id
  * Delete a pamphlet
  * Protected route - requires authentication and ownership
  */
-router.delete('/:id', authMiddleware, deletePamphlet);
+router.delete('/:id', authMiddleware, deletePamphletHandler);
 
 export default router;
