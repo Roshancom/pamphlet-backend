@@ -1,4 +1,7 @@
 import dotenv from 'dotenv';
+import { pinoHttp } from 'pino-http';
+
+import logger from '../config/logger.js';
 import db from '../db/index.js';
 import app from './app.js';
 
@@ -15,15 +18,20 @@ const startServer = async (): Promise<void> => {
     // Test database connection
     await db.execute('SELECT 1');
 
-    console.log('Database connected successfully');
+    app.use(
+      pinoHttp({
+        logger,
+      }),
+    );
 
     // Start Express server
     app.listen(PORT, () => {
-      console.log(`Server running on http://localhost:${PORT}`);
+      logger.info(`Server running on http://localhost:${PORT}`);
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error('✗ Failed to start server:', errorMessage);
+    logger.error(`Failed to connect to the database: ${errorMessage}`);
+    // console.error('✗ Failed to start server:', errorMessage);
     process.exit(1);
   }
 };
