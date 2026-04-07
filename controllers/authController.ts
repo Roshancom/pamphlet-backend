@@ -1,8 +1,9 @@
 import { Request, Response } from 'express';
+import { SUCCESS } from '../constants/result.constants.js';
 import { loginUser, registerUser } from '../services/auth.services.js';
-import { ApiResponse, UserPayload } from '../types/index.js';
+import { UserPayload } from '../types/index.js';
 import { asyncHandler } from '../utils/asyncHandlers.js';
-import { successResponse } from '../utils/helpers.js';
+import { errorSuccessMessage, successResponse } from '../utils/helpers.js';
 
 /**
  * Register a new user
@@ -14,12 +15,12 @@ export const register = asyncHandler(
     const { name, email, password }: UserPayload = req.body;
     await registerUser(name, email, password);
 
-    const response: ApiResponse<null> = {
-      success: true,
+    errorSuccessMessage({
+      res,
+      status: 201,
+      type: SUCCESS,
       message: 'User registered successfully.',
-    };
-
-    successResponse(res, 201, response, 'User registered successfully.');
+    });
   },
 );
 

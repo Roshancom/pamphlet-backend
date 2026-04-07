@@ -25,3 +25,19 @@ export const findUserById = async (id: number) => {
     .from(users)
     .where(eq(users.id, id));
 };
+
+export const updateUserById = async (
+  id: number,
+  data: { name?: string; email?: string },
+) => {
+  return await db
+    .update(users)
+    .set({
+      ...data,
+    })
+    .where(eq(users.id, id));
+};
+
+export const deleteUserById = async (id: number) => {
+  return await db.delete(users).where(eq(users.id, id));
+};
