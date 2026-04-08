@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import { SUCCESS } from '../constants/result.constants.js';
 import {
   deleteUser,
+  getPamphletsByUserId,
   getUsers,
   getUsersById,
   updateUser,
@@ -47,7 +48,16 @@ export const deleteUserByIdHandler = asyncHandler(
       res,
       status: 200,
       type: SUCCESS,
-      message: 'User updated successfully.',
+      message: 'User deleted successfully.',
     });
+  },
+);
+
+export const getPamphletsByUserIdHandler = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const { userId } = req.params;
+
+    const result = await getPamphletsByUserId(Number(userId));
+    successResponse(res, 200, result, 'Pamphlets retrieved successfully.');
   },
 );

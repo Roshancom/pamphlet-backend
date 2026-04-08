@@ -11,7 +11,7 @@ import { ErrorResponse } from '../types/index.js';
  * @param res - Express Response object
  * @param next - Express NextFunction
  */
-export const errorHandler = (
+export const errorHandlerMiddleware = (
   err: Error | AppError,
   _req: Request,
   res: Response,

@@ -9,6 +9,7 @@ import {
 } from '../services/pamphlts.services.js';
 import { PaginatedApiResponse, Pamphlet } from '../types/index.js';
 import { asyncHandler } from '../utils/asyncHandlers.js';
+import { generatePamphletPayload } from '../utils/generate-pamphlet-payload.js';
 import { errorSuccessMessage, successResponse } from '../utils/helpers.js';
 
 /**
@@ -62,10 +63,9 @@ export const getPamphletByUrlKey = asyncHandler(
  */
 export const createPamphlet = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const payload = req.body;
     const userId = req.user?.id;
 
-    await postPamphlet(payload, userId);
+    await postPamphlet(generatePamphletPayload(req), userId);
 
     errorSuccessMessage({
       res,
@@ -85,10 +85,9 @@ export const createPamphlet = asyncHandler(
 export const updatePamphletHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
-    const payload = req.body;
     const userId = req.user?.id;
 
-    await updatePamphlet(Number(id), payload, userId);
+    await updatePamphlet(Number(id), generatePamphletPayload(req), userId);
 
     successResponse(res, 200, null, 'Pamphlet updated successfully.');
   },

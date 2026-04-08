@@ -7,7 +7,7 @@ import app from './app.js';
 
 dotenv.config();
 
-const PORT = process.env.PORT || 5000;
+export const PORT = process.env.PORT || 5000;
 
 /**
  * Start the Express server

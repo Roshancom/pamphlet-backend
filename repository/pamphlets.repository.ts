@@ -1,10 +1,9 @@
-import { and, count, desc, eq, inArray, like } from 'drizzle-orm';
+import { and, eq, getTableColumns, inArray, like, sql } from 'drizzle-orm';
 import db from '../db/index.js';
 import {
   pamphletContacts,
-  pamphletImages,
-  pamphletLocations,
   pamphlets,
+  pamphletsLocations,
   users,
 } from '../db/schema.js';
 
@@ -23,50 +22,46 @@ export const findPamphletsWithFilters = async ({
 }: Filters) => {
   const conditions = [];
 
-  // Category filter
+  //  Category filter
   if (categories?.length) {
-    if (categories.length > 1) {
-      conditions.push(inArray(pamphlets.category, categories));
-    } else {
-      conditions.push(eq(pamphlets.category, categories[0]));
-    }
+    conditions.push(inArray(pamphlets.category, categories));
   }
 
-  // Location filter
+  //  Location filter (JOIN table)
   if (location) {
-    conditions.push(like(pamphlets.location, `%${location}%`));
+    conditions.push(like(pamphletsLocations.city, `%${location}%`));
   }
 
-  const whereCondition = conditions.length ? and(...conditions) : undefined;
-
-  // Total count
-  const totalResult = await db
-    .select({ total: count() })
-    .from(pamphlets)
-    .where(whereCondition);
-
-  const total = totalResult[0]?.total || 0;
-
-  // Data query
+  // Query with JOIN
   const data = await db
     .select({
-      id: pamphlets.id,
-      title: pamphlets.title,
-      short_description: pamphlets.shortDescription,
-      thumbnail_image: pamphlets.thumbnailImage,
-      category: pamphlets.category,
-      location: pamphlets.location,
-      user_id: pamphlets.userId,
-      created_at: pamphlets.createdAt,
-      url_key: pamphlets.urlKey,
-      author_name: users.name,
+      ...getTableColumns(pamphlets),
+      location: {
+        city: pamphletsLocations.city,
+        latitude: pamphletsLocations.latitude,
+        longitude: pamphletsLocations.longitude,
+      },
     })
     .from(pamphlets)
-    .innerJoin(users, eq(pamphlets.userId, users.id))
-    .where(whereCondition)
-    .orderBy(desc(pamphlets.createdAt))
+    .leftJoin(
+      pamphletsLocations,
+      eq(pamphlets.locationId, pamphletsLocations.id),
+    )
+    .where(conditions.length ? and(...conditions) : undefined)
     .limit(limit)
     .offset(offset);
+
+  //   Count query
+  const totalResult = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(pamphlets)
+    .leftJoin(
+      pamphletsLocations,
+      eq(pamphlets.locationId, pamphletsLocations.id),
+    )
+    .where(conditions.length ? and(...conditions) : undefined);
+
+  const total = totalResult[0]?.count || 0;
 
   return { data, total };
 };
@@ -77,27 +72,35 @@ export const findPamphletByUrlKey = async (urlKey: string) => {
     .select({
       id: pamphlets.id,
       title: pamphlets.title,
-      content: pamphlets.content,
       category: pamphlets.category,
-      location: pamphlets.location,
       user_id: pamphlets.userId,
       url_key: pamphlets.urlKey,
       created_at: pamphlets.createdAt,
       author_name: users.name,
+      locationId: pamphlets.locationId,
+      // Location
+      location: {
+        city: pamphletsLocations.city,
+        latitude: pamphletsLocations.latitude,
+        longitude: pamphletsLocations.longitude,
+      },
+
+      // Contact
+      contact: {
+        phone: pamphletContacts.phone,
+        email: pamphletContacts.email,
+      },
     })
     .from(pamphlets)
     .innerJoin(users, eq(pamphlets.userId, users.id))
+    .leftJoin(
+      pamphletsLocations,
+      eq(pamphlets.locationId, pamphletsLocations.id),
+    )
+    .leftJoin(pamphletContacts, eq(pamphlets.id, pamphletContacts.pamphletId))
     .where(eq(pamphlets.urlKey, urlKey));
 
-  return result[0];
-};
-
-// 2. Images
-export const findPamphletImages = async (pamphletId: number) => {
-  return await db
-    .select({ image_url: pamphletImages.imageUrl })
-    .from(pamphletImages)
-    .where(eq(pamphletImages.pamphletId, pamphletId));
+  return result[0] || null;
 };
 
 // 3. Contact
@@ -105,7 +108,6 @@ export const findPamphletContact = async (pamphletId: number) => {
   const result = await db
     .select({
       phone: pamphletContacts.phone,
-      whatsapp: pamphletContacts.whatsapp,
       email: pamphletContacts.email,
     })
     .from(pamphletContacts)
@@ -118,14 +120,41 @@ export const findPamphletContact = async (pamphletId: number) => {
 export const findPamphletLocation = async (pamphletId: number) => {
   const result = await db
     .select({
-      address: pamphletLocations.address,
-      latitude: pamphletLocations.latitude,
-      longitude: pamphletLocations.longitude,
+      city: pamphletsLocations.city,
+      latitude: pamphletsLocations.latitude,
+      longitude: pamphletsLocations.longitude,
     })
-    .from(pamphletLocations)
-    .where(eq(pamphletLocations.pamphletId, pamphletId));
+    .from(pamphlets)
+    .leftJoin(
+      pamphletsLocations,
+      eq(pamphlets.locationId, pamphletsLocations.id),
+    )
+    .where(eq(pamphlets.id, pamphletId));
 
   return result[0] || null;
+};
+
+export const insertLocation = async (location?: {
+  city: string;
+  latitude: number;
+  longitude: number;
+}) => {
+  let locationId: number | null = null;
+
+  if (location) {
+    // Insert location first
+    const locationResult = await db
+      .insert(pamphletsLocations)
+      .values({
+        city: location?.city,
+        latitude: location?.latitude,
+        longitude: location?.longitude,
+      })
+      .$returningId();
+
+    locationId = locationResult[0]?.id || null;
+  }
+  return locationId;
 };
 
 export const createPamphletResource = async (data: {
@@ -133,24 +162,28 @@ export const createPamphletResource = async (data: {
   shortDescription: string;
   thumbnailImage?: string | null;
   category: string;
-  location: string;
+  location?: {
+    city: string;
+    latitude: number;
+    longitude: number;
+  };
+  content?: string;
   userId: number;
   urlKey: string;
 }) => {
-  const result = await db
-    .insert(pamphlets)
-    .values({
-      title: data.title,
-      shortDescription: data.shortDescription,
-      thumbnailImage: data.thumbnailImage || null,
-      category: data.category,
-      location: data.location,
-      userId: data.userId,
-      urlKey: data.urlKey,
-    })
-    .$returningId();
+  // Insert pamphlet with locationId
+  const locationId = await insertLocation(data.location);
 
-  return result[0]?.id;
+  await db.insert(pamphlets).values({
+    title: data.title,
+    shortDescription: data.shortDescription,
+    thumbnailImage: data.thumbnailImage || null,
+    category: data.category,
+    locationId: locationId,
+    userId: data.userId,
+    urlKey: data.urlKey,
+    content: data.content,
+  });
 };
 
 export const updatePamphletById = async (
@@ -160,9 +193,15 @@ export const updatePamphletById = async (
     shortDescription?: string;
     thumbnailImage?: string | null;
     category?: string;
-    location?: string;
+    location?: {
+      city: string;
+      latitude: number;
+      longitude: number;
+    };
   },
 ) => {
+  const locationId = await insertLocation(data.location);
+
   return await db
     .update(pamphlets)
     .set({
@@ -170,7 +209,7 @@ export const updatePamphletById = async (
       shortDescription: data.shortDescription,
       thumbnailImage: data.thumbnailImage,
       category: data.category,
-      location: data.location,
+      locationId: locationId,
     })
     .where(eq(pamphlets.id, id));
 };

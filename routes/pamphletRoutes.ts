@@ -8,6 +8,11 @@ import {
   updatePamphletHandler,
 } from '../controllers/pamphletController.js';
 import authMiddleware from '../middleware/authMiddleware.js';
+import {
+  handleUploadErrors,
+  normalizePamphletMultipartBody,
+  upload,
+} from '../middleware/uploadMiddleware.js';
 import { validationMiddleware } from '../middleware/validationMiddleware.js';
 import { pamphletSchema } from '../validations/pamphlets.validation.js';
 
@@ -22,8 +27,8 @@ const router = express.Router();
 router.get('/', getAllPamphlets);
 
 /**
- * GET /api/pamphlets/:id
- * Get a specific pamphlet by ID
+ * GET /api/pamphlets/:url_key
+ * Get a specific pamphlet by URL key
  * Public route
  */
 router.get('/:url_key', getPamphletByUrlKey);
@@ -36,6 +41,9 @@ router.get('/:url_key', getPamphletByUrlKey);
 router.post(
   '/',
   authMiddleware,
+  upload.single('thumbnail_image'),
+  handleUploadErrors,
+  normalizePamphletMultipartBody,
   validationMiddleware(pamphletSchema),
   createPamphlet,
 );
@@ -45,7 +53,14 @@ router.post(
  * Update a pamphlet
  * Protected route - requires authentication and ownership
  */
-router.put('/:id', authMiddleware, updatePamphletHandler);
+router.put(
+  '/:id',
+  authMiddleware,
+  upload.single('thumbnail_image'),
+  handleUploadErrors,
+  normalizePamphletMultipartBody,
+  updatePamphletHandler,
+);
 
 /**
  * DELETE /api/pamphlets/:id

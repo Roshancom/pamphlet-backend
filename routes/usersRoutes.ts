@@ -1,6 +1,7 @@
 import express from 'express';
 import {
   deleteUserByIdHandler,
+  getPamphletsByUserIdHandler,
   getUserByIdHandler,
   getUsersHandler,
   updateUserByIdHandler,
@@ -16,5 +17,7 @@ router.get('/:id', authMiddleware, getUserByIdHandler);
 router.put('/:id', authMiddleware, updateUserByIdHandler);
 
 router.delete('/:id', authMiddleware, deleteUserByIdHandler);
+
+router.get('/pamphlets/:userId', authMiddleware, getPamphletsByUserIdHandler);
 
 export default router;

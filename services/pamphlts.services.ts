@@ -3,9 +3,6 @@ import {
   deletePamphletById,
   findPamphletById,
   findPamphletByUrlKey,
-  findPamphletContact,
-  findPamphletImages,
-  findPamphletLocation,
   findPamphletsWithFilters,
   updatePamphletById,
 } from '../repository/pamphlets.repository.js';
@@ -20,6 +17,29 @@ type QueryParams = {
   limit?: string;
   category?: string;
   location?: string;
+};
+
+export type LocationType = {
+  city: string;
+  latitude: number;
+  longitude: number;
+};
+export type PamphletPayload = {
+  title: string;
+  short_description: string;
+  thumbnail_image?: string;
+  category: string;
+  location: LocationType;
+  url_key: string;
+  email?: string;
+  phone: string;
+  content?: string;
+  contact: ContactType;
+};
+
+export type ContactType = {
+  email?: string;
+  phone: string;
 };
 
 export const getPamphletsWithFilters = async (query: QueryParams) => {
@@ -55,33 +75,11 @@ export const pamphletByUrlKey = async (urlKey: string) => {
     throw new NotFoundException();
   }
 
-  const pamphletId = pamphlet.id;
-
-  // 2. Fetch related data in parallel
-  const [imagesResult, contactResult, locationResult] = await Promise.all([
-    findPamphletImages(pamphletId),
-    findPamphletContact(pamphletId),
-    findPamphletLocation(pamphletId),
-  ]);
-
-  // 3. Format response
-  return {
-    ...pamphlet,
-    images: imagesResult.map((img) => img.image_url),
-    contact: contactResult || null,
-    store_location: locationResult || null,
-  };
+  return pamphlet;
 };
 
 export const postPamphlet = async (
-  payload: {
-    title: string;
-    short_description: string;
-    thumbnail_image?: string;
-    category: string;
-    location: string;
-    url_key: string;
-  },
+  payload: PamphletPayload,
   userId?: number,
 ) => {
   if (!userId) {
@@ -95,6 +93,7 @@ export const postPamphlet = async (
     category: payload.category,
     location: payload.location,
     userId,
+
     urlKey: payload.url_key,
   });
 };
@@ -106,7 +105,7 @@ export const updatePamphlet = async (
     short_description?: string;
     thumbnail_image?: string | null;
     category?: string;
-    location?: string;
+    location?: LocationType;
   },
   userId?: number,
 ) => {

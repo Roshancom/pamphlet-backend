@@ -1,6 +1,6 @@
 // drizzle/schema.ts
 import {
-  decimal,
+  double,
   int,
   mysqlTable,
   serial,
@@ -31,7 +31,9 @@ export const pamphlets = mysqlTable('pamphlets', {
   content: text('content'),
   thumbnailImage: varchar('thumbnail_image', { length: 255 }),
   category: varchar('category', { length: 100 }),
-  location: varchar('location', { length: 255 }),
+  locationId: int('location_id').references(() => pamphletsLocations.id, {
+    onDelete: 'set null',
+  }),
   userId: int('user_id'),
   urlKey: varchar('url_key', { length: 255 }),
   createdAt: timestamp('created_at').defaultNow(),
@@ -48,13 +50,11 @@ export const pamphletContacts = mysqlTable('pamphlet_contacts', {
   pamphletId: int('pamphlet_id'),
   phone: varchar('phone', { length: 20 }),
   email: varchar('email', { length: 255 }),
-  whatsapp: varchar('whatsapp', { length: 20 }),
 });
 
-export const pamphletLocations = mysqlTable('pamphlet_locations', {
+export const pamphletsLocations = mysqlTable('pamphlets_location', {
   id: serial('id').primaryKey(),
-  pamphletId: int('pamphlet_id'),
-  address: text('address'),
-  latitude: decimal('latitude', { precision: 10, scale: 8 }),
-  longitude: decimal('longitude', { precision: 11, scale: 8 }),
+  city: varchar('city', { length: 255 }),
+  latitude: double('latitude'),
+  longitude: double('longitude'),
 });
