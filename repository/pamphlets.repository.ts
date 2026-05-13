@@ -45,7 +45,7 @@ export const findPamphletsWithFilters = async ({
     .from(pamphlets)
     .leftJoin(
       pamphletsLocations,
-      eq(pamphlets.locationId, pamphletsLocations.id),
+      eq(pamphlets.location_id, pamphletsLocations.id),
     )
     .where(conditions.length ? and(...conditions) : undefined)
     .limit(limit)
@@ -57,7 +57,7 @@ export const findPamphletsWithFilters = async ({
     .from(pamphlets)
     .leftJoin(
       pamphletsLocations,
-      eq(pamphlets.locationId, pamphletsLocations.id),
+      eq(pamphlets.location_id, pamphletsLocations.id),
     )
     .where(conditions.length ? and(...conditions) : undefined);
 
@@ -67,17 +67,18 @@ export const findPamphletsWithFilters = async ({
 };
 
 // 1. Main pamphlet
-export const findPamphletByUrlKey = async (urlKey: string) => {
+export const findPamphletByurl_key = async (url_key: string) => {
   const result = await db
     .select({
       id: pamphlets.id,
       title: pamphlets.title,
       category: pamphlets.category,
-      user_id: pamphlets.userId,
-      url_key: pamphlets.urlKey,
-      created_at: pamphlets.createdAt,
+      user_id: pamphlets.user_id,
+      url_key: pamphlets.url_key,
+      created_at: pamphlets.created_at,
       author_name: users.name,
-      locationId: pamphlets.locationId,
+      location_id: pamphlets.location_id,
+      short_description: pamphlets.short_description,
       // Location
       location: {
         city: pamphletsLocations.city,
@@ -92,32 +93,32 @@ export const findPamphletByUrlKey = async (urlKey: string) => {
       },
     })
     .from(pamphlets)
-    .innerJoin(users, eq(pamphlets.userId, users.id))
+    .innerJoin(users, eq(pamphlets.user_id, users.id))
     .leftJoin(
       pamphletsLocations,
-      eq(pamphlets.locationId, pamphletsLocations.id),
+      eq(pamphlets.location_id, pamphletsLocations.id),
     )
-    .leftJoin(pamphletContacts, eq(pamphlets.id, pamphletContacts.pamphletId))
-    .where(eq(pamphlets.urlKey, urlKey));
+    .leftJoin(pamphletContacts, eq(pamphlets.id, pamphletContacts.pamphlet_id))
+    .where(eq(pamphlets.url_key, url_key));
 
   return result[0] || null;
 };
 
 // 3. Contact
-export const findPamphletContact = async (pamphletId: number) => {
+export const findPamphletContact = async (pamphlet_id: number) => {
   const result = await db
     .select({
       phone: pamphletContacts.phone,
       email: pamphletContacts.email,
     })
     .from(pamphletContacts)
-    .where(eq(pamphletContacts.pamphletId, pamphletId));
+    .where(eq(pamphletContacts.pamphlet_id, pamphlet_id));
 
   return result[0] || null;
 };
 
 // 4. Location
-export const findPamphletLocation = async (pamphletId: number) => {
+export const findPamphletLocation = async (pamphlet_id: number) => {
   const result = await db
     .select({
       city: pamphletsLocations.city,
@@ -127,9 +128,9 @@ export const findPamphletLocation = async (pamphletId: number) => {
     .from(pamphlets)
     .leftJoin(
       pamphletsLocations,
-      eq(pamphlets.locationId, pamphletsLocations.id),
+      eq(pamphlets.location_id, pamphletsLocations.id),
     )
-    .where(eq(pamphlets.id, pamphletId));
+    .where(eq(pamphlets.id, pamphlet_id));
 
   return result[0] || null;
 };
@@ -139,7 +140,7 @@ export const insertLocation = async (location?: {
   latitude: number;
   longitude: number;
 }) => {
-  let locationId: number | null = null;
+  let location_id: number | null = null;
 
   if (location) {
     // Insert location first
@@ -152,15 +153,18 @@ export const insertLocation = async (location?: {
       })
       .$returningId();
 
-    locationId = locationResult[0]?.id || null;
+    location_id = locationResult[0]?.id || null;
+
+    console.log(location, 'Insert Location', locationResult);
   }
-  return locationId;
+
+  return location_id;
 };
 
 export const createPamphletResource = async (data: {
   title: string;
-  shortDescription: string;
-  thumbnailImage?: string | null;
+  short_description: string;
+  thumbnail_image?: string | null;
   category: string;
   location?: {
     city: string;
@@ -168,20 +172,20 @@ export const createPamphletResource = async (data: {
     longitude: number;
   };
   content?: string;
-  userId: number;
-  urlKey: string;
+  user_id: number;
+  url_key: string;
 }) => {
-  // Insert pamphlet with locationId
-  const locationId = await insertLocation(data.location);
+  // Insert pamphlet with location_id
+  const location_id = await insertLocation(data.location);
 
   await db.insert(pamphlets).values({
     title: data.title,
-    shortDescription: data.shortDescription,
-    thumbnailImage: data.thumbnailImage || null,
+    short_description: data.short_description,
+    thumbnail_image: data.thumbnail_image || null,
     category: data.category,
-    locationId: locationId,
-    userId: data.userId,
-    urlKey: data.urlKey,
+    location_id: location_id,
+    user_id: data.user_id,
+    url_key: data.url_key,
     content: data.content,
   });
 };
@@ -190,8 +194,8 @@ export const updatePamphletById = async (
   id: number,
   data: {
     title?: string;
-    shortDescription?: string;
-    thumbnailImage?: string | null;
+    short_description?: string;
+    thumbnail_image?: string | null;
     category?: string;
     location?: {
       city: string;
@@ -200,16 +204,16 @@ export const updatePamphletById = async (
     };
   },
 ) => {
-  const locationId = await insertLocation(data.location);
+  const location_id = await insertLocation(data.location);
 
   return await db
     .update(pamphlets)
     .set({
       title: data.title,
-      shortDescription: data.shortDescription,
-      thumbnailImage: data.thumbnailImage,
+      short_description: data.short_description,
+      thumbnail_image: data.thumbnail_image,
       category: data.category,
-      locationId: locationId,
+      location_id: location_id,
     })
     .where(eq(pamphlets.id, id));
 };
@@ -218,7 +222,7 @@ export const findPamphletById = async (id: number) => {
   const result = await db
     .select({
       id: pamphlets.id,
-      userId: pamphlets.userId,
+      user_id: pamphlets.user_id,
     })
     .from(pamphlets)
     .where(eq(pamphlets.id, id));

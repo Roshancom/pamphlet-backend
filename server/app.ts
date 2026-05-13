@@ -16,6 +16,13 @@ app.use(express.json({ limit: '16kb' }));
 app.use(cors());
 
 // Routes
+app.get('/', (req, res) => {
+  res.status(200).json({
+    status: 'success',
+    message: 'API is running',
+  });
+});
+
 app.use('/api', rootRouter);
 
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));

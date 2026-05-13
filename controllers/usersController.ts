@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import { SUCCESS } from '../constants/result.constants.js';
 import {
   deleteUser,
-  getPamphletsByUserId,
+  getPamphletsByuser_id,
   getUsers,
   getUsersById,
   updateUser,
@@ -53,11 +53,11 @@ export const deleteUserByIdHandler = asyncHandler(
   },
 );
 
-export const getPamphletsByUserIdHandler = asyncHandler(
+export const getPamphletsByuser_idHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const { userId } = req.params;
+    const { user_id } = req.params;
 
-    const result = await getPamphletsByUserId(Number(userId));
+    const result = await getPamphletsByuser_id(Number(user_id));
     successResponse(res, 200, result, 'Pamphlets retrieved successfully.');
   },
 );

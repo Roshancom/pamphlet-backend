@@ -8,7 +8,7 @@ export const findAllUsers = async () => {
       id: users.id,
       name: users.name,
       email: users.email,
-      createdAt: users.createdAt,
+      created_at: users.created_at,
     })
     .from(users)
     .execute(); // returns array of users
@@ -20,7 +20,7 @@ export const findUserById = async (id: number) => {
       id: users.id,
       name: users.name,
       email: users.email,
-      createdAt: users.createdAt,
+      created_at: users.created_at,
     })
     .from(users)
     .where(eq(users.id, id));
@@ -42,21 +42,21 @@ export const deleteUserById = async (id: number) => {
   return await db.delete(users).where(eq(users.id, id));
 };
 
-export const findPamphletsByUserId = async (userId: number) => {
+export const findPamphletsByuser_id = async (user_id: number) => {
   return await db
     .select({
       id: pamphlets.id,
       title: pamphlets.title,
-      short_description: pamphlets.shortDescription,
-      thumbnail_image: pamphlets.thumbnailImage,
+      short_description: pamphlets.short_description,
+      thumbnail_image: pamphlets.thumbnail_image,
       category: pamphlets.category,
       location: pamphlets.location,
-      user_id: pamphlets.userId,
-      created_at: pamphlets.createdAt,
-      url_key: pamphlets.urlKey,
+      user_id: pamphlets.user_id,
+      created_at: pamphlets.created_at,
+      url_key: pamphlets.url_key,
       author_name: users.name,
     })
     .from(pamphlets)
-    .where(eq(pamphlets.userId, userId))
-    .leftJoin(users, eq(pamphlets.userId, users.id));
+    .where(eq(pamphlets.user_id, user_id))
+    .leftJoin(users, eq(pamphlets.user_id, users.id));
 };

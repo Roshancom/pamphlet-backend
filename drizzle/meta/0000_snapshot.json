@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "ebdcea70-0796-4d82-abda-5e7371861a34",
+  "id": "51b9ba89-d60c-4ee9-a400-fd96cb83ee1c",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "categories": {
@@ -80,13 +80,6 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
-        },
-        "whatsapp": {
-          "name": "whatsapp",
-          "type": "varchar(20)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
         }
       },
       "indexes": {},
@@ -140,58 +133,6 @@
       "uniqueConstraints": {},
       "checkConstraint": {}
     },
-    "pamphlet_locations": {
-      "name": "pamphlet_locations",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": true
-        },
-        "pamphlet_id": {
-          "name": "pamphlet_id",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "address": {
-          "name": "address",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "latitude": {
-          "name": "latitude",
-          "type": "decimal(10,8)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "longitude": {
-          "name": "longitude",
-          "type": "decimal(11,8)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {
-        "pamphlet_locations_id": {
-          "name": "pamphlet_locations_id",
-          "columns": [
-            "id"
-          ]
-        }
-      },
-      "uniqueConstraints": {},
-      "checkConstraint": {}
-    },
     "pamphlets": {
       "name": "pamphlets",
       "columns": {
@@ -237,9 +178,9 @@
           "notNull": false,
           "autoincrement": false
         },
-        "location": {
-          "name": "location",
-          "type": "varchar(255)",
+        "location_id": {
+          "name": "location_id",
+          "type": "int",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -268,10 +209,69 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {},
+      "foreignKeys": {
+        "pamphlets_location_id_pamphlets_location_id_fk": {
+          "name": "pamphlets_location_id_pamphlets_location_id_fk",
+          "tableFrom": "pamphlets",
+          "tableTo": "pamphlets_location",
+          "columnsFrom": [
+            "location_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {
         "pamphlets_id": {
           "name": "pamphlets_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "pamphlets_location": {
+      "name": "pamphlets_location",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "city": {
+          "name": "city",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "latitude": {
+          "name": "latitude",
+          "type": "double",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "longitude": {
+          "name": "longitude",
+          "type": "double",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "pamphlets_location_id": {
+          "name": "pamphlets_location_id",
           "columns": [
             "id"
           ]

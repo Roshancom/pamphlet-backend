@@ -14,40 +14,40 @@ export const users = mysqlTable('users', {
   name: varchar('name', { length: 100 }),
   email: varchar('email', { length: 100 }),
   password: varchar('password', { length: 255 }),
-  createdAt: timestamp('created_at').defaultNow(),
+  created_at: timestamp('created_at').defaultNow(),
 });
 
 export const categories = mysqlTable('categories', {
   id: serial('id').primaryKey(),
   name: varchar('name', { length: 100 }),
   slug: varchar('slug', { length: 100 }),
-  createdAt: timestamp('created_at').defaultNow(),
+  created_at: timestamp('created_at').defaultNow(),
 });
 
 export const pamphlets = mysqlTable('pamphlets', {
   id: serial('id').primaryKey(),
   title: varchar('title', { length: 255 }),
-  shortDescription: text('short_description'),
+  short_description: text('short_description'),
   content: text('content'),
-  thumbnailImage: varchar('thumbnail_image', { length: 255 }),
+  thumbnail_image: varchar('thumbnail_image', { length: 255 }),
   category: varchar('category', { length: 100 }),
-  locationId: int('location_id').references(() => pamphletsLocations.id, {
+  location_id: int('location_id').references(() => pamphletsLocations.id, {
     onDelete: 'set null',
   }),
-  userId: int('user_id'),
-  urlKey: varchar('url_key', { length: 255 }),
-  createdAt: timestamp('created_at').defaultNow(),
+  user_id: int('user_id'),
+  url_key: varchar('url_key', { length: 255 }),
+  created_at: timestamp('created_at').defaultNow(),
 });
 
 export const pamphletImages = mysqlTable('pamphlet_images', {
   id: serial('id').primaryKey(),
-  pamphletId: int('pamphlet_id'),
-  imageUrl: text('image_url'),
+  pamphlet_id: int('pamphlet_id'),
+  image_url: text('image_url'),
 });
 
 export const pamphletContacts = mysqlTable('pamphlet_contacts', {
   id: serial('id').primaryKey(),
-  pamphletId: int('pamphlet_id'),
+  pamphlet_id: int('pamphlet_id'),
   phone: varchar('phone', { length: 20 }),
   email: varchar('email', { length: 255 }),
 });

@@ -1,7 +1,7 @@
 import {
   deleteUserById,
   findAllUsers,
-  findPamphletsByUserId,
+  findPamphletsByuser_id,
   findUserById,
   updateUserById,
 } from '../repository/users.repository.js';
@@ -17,6 +17,6 @@ export const updateUser = async (
 
 export const deleteUser = async (id: number) => await deleteUserById(id);
 
-export const getPamphletsByUserId = async (userId: number) => {
-  return await findPamphletsByUserId(userId);
+export const getPamphletsByuser_id = async (user_id: number) => {
+  return await findPamphletsByuser_id(user_id);
 };

@@ -22,23 +22,12 @@ export interface Pamphlet {
   short_description: string | null;
   thumbnail_image: string | null;
   category: string | null;
-  location: string | null;
+  location_id: number | null;
+  location: { city: string; latitude: number; longitude: number };
   user_id: number | null;
   created_at: Date | null;
   url_key: string | null;
   author_name: string | null;
-}
-
-/**
- * Pamphlet payload for create and update requests
- */
-export interface PamphletPayload {
-  title?: string;
-  short_description?: string;
-  thumbnail_image?: string;
-  category?: string;
-  location?: string;
-  url_key: string;
 }
 
 /**

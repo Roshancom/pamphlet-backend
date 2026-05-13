@@ -7,7 +7,6 @@ export type {
   CountResult,
   PaginatedPamphlets,
   Pamphlet,
-  PamphletPayload,
   PamphletResponse,
 } from './pamphlet.js';
 

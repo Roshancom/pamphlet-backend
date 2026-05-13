@@ -100,8 +100,8 @@ export const normalizePamphletMultipartBody = (
       }
 
       if (
-        typeof location.latitude === 'string' &&
-        location.latitude.trim() !== ''
+        typeof location?.latitude === 'string' &&
+        location?.latitude.trim() !== ''
       ) {
         location.latitude = Number(location.latitude);
       }

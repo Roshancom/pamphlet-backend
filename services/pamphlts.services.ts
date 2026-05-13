@@ -2,7 +2,7 @@ import {
   createPamphletResource,
   deletePamphletById,
   findPamphletById,
-  findPamphletByUrlKey,
+  findPamphletByurl_key,
   findPamphletsWithFilters,
   updatePamphletById,
 } from '../repository/pamphlets.repository.js';
@@ -67,9 +67,9 @@ export const getPamphletsWithFilters = async (query: QueryParams) => {
   };
 };
 
-export const pamphletByUrlKey = async (urlKey: string) => {
+export const pamphletByurl_key = async (url_key: string) => {
   // 1. Get main pamphlet
-  const pamphlet = await findPamphletByUrlKey(urlKey);
+  const pamphlet = await findPamphletByurl_key(url_key);
 
   if (!pamphlet) {
     throw new NotFoundException();
@@ -80,21 +80,21 @@ export const pamphletByUrlKey = async (urlKey: string) => {
 
 export const postPamphlet = async (
   payload: PamphletPayload,
-  userId?: number,
+  user_id?: number,
 ) => {
-  if (!userId) {
+  if (!user_id) {
     throw new NotFoundException('User not found');
   }
 
   await createPamphletResource({
     title: payload.title,
-    shortDescription: payload.short_description,
-    thumbnailImage: payload.thumbnail_image,
+    short_description: payload.short_description,
+    thumbnail_image: payload.thumbnail_image,
     category: payload.category,
     location: payload.location,
-    userId,
+    user_id,
 
-    urlKey: payload.url_key,
+    url_key: payload.url_key,
   });
 };
 
@@ -107,9 +107,9 @@ export const updatePamphlet = async (
     category?: string;
     location?: LocationType;
   },
-  userId?: number,
+  user_id?: number,
 ) => {
-  if (!userId) {
+  if (!user_id) {
     throw new UnAuthorizedException('User not found');
   }
 
@@ -119,7 +119,7 @@ export const updatePamphlet = async (
     throw new NotFoundException('Pamphlet not found');
   }
 
-  if (pamphlet.userId !== userId) {
+  if (pamphlet.user_id !== user_id) {
     throw new ForbiddenException(
       'You are not authorized to update this pamphlet.',
     );
@@ -127,15 +127,15 @@ export const updatePamphlet = async (
 
   await updatePamphletById(id, {
     title: payload.title,
-    shortDescription: payload.short_description,
-    thumbnailImage: payload.thumbnail_image,
+    short_description: payload.short_description,
+    thumbnail_image: payload.thumbnail_image,
     category: payload.category,
     location: payload.location,
   });
 };
 
-export const deletePamphlet = async (id: number, userId?: number) => {
-  if (!userId) {
+export const deletePamphlet = async (id: number, user_id?: number) => {
+  if (!user_id) {
     throw new UnAuthorizedException('User not found');
   }
 
@@ -145,7 +145,7 @@ export const deletePamphlet = async (id: number, userId?: number) => {
     throw new NotFoundException('Pamphlet not found');
   }
 
-  if (pamphlet.userId !== userId) {
+  if (pamphlet.user_id !== user_id) {
     throw new ForbiddenException(
       'You are not authorized to delete this pamphlet.',
     );

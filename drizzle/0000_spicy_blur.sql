@@ -11,7 +11,6 @@ CREATE TABLE `pamphlet_contacts` (
 	`pamphlet_id` int,
 	`phone` varchar(20),
 	`email` varchar(255),
-	`whatsapp` varchar(20),
 	CONSTRAINT `pamphlet_contacts_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
@@ -22,15 +21,6 @@ CREATE TABLE `pamphlet_images` (
 	CONSTRAINT `pamphlet_images_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
-CREATE TABLE `pamphlet_locations` (
-	`id` serial AUTO_INCREMENT NOT NULL,
-	`pamphlet_id` int,
-	`address` text,
-	`latitude` decimal(10,8),
-	`longitude` decimal(11,8),
-	CONSTRAINT `pamphlet_locations_id` PRIMARY KEY(`id`)
-);
---> statement-breakpoint
 CREATE TABLE `pamphlets` (
 	`id` serial AUTO_INCREMENT NOT NULL,
 	`title` varchar(255),
@@ -38,11 +28,19 @@ CREATE TABLE `pamphlets` (
 	`content` text,
 	`thumbnail_image` varchar(255),
 	`category` varchar(100),
-	`location` varchar(255),
+	`location_id` int,
 	`user_id` int,
 	`url_key` varchar(255),
 	`created_at` timestamp DEFAULT (now()),
 	CONSTRAINT `pamphlets_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `pamphlets_location` (
+	`id` serial AUTO_INCREMENT NOT NULL,
+	`city` varchar(255),
+	`latitude` double,
+	`longitude` double,
+	CONSTRAINT `pamphlets_location_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
 CREATE TABLE `users` (
@@ -53,3 +51,5 @@ CREATE TABLE `users` (
 	`created_at` timestamp DEFAULT (now()),
 	CONSTRAINT `users_id` PRIMARY KEY(`id`)
 );
+--> statement-breakpoint
+ALTER TABLE `pamphlets` ADD CONSTRAINT `pamphlets_location_id_pamphlets_location_id_fk` FOREIGN KEY (`location_id`) REFERENCES `pamphlets_location`(`id`) ON DELETE set null ON UPDATE no action;

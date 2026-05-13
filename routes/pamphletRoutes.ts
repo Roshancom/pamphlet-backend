@@ -4,7 +4,7 @@ import {
   createPamphlet,
   deletePamphletHandler,
   getAllPamphlets,
-  getPamphletByUrlKey,
+  getPamphletByurl_key,
   updatePamphletHandler,
 } from '../controllers/pamphletController.js';
 import authMiddleware from '../middleware/authMiddleware.js';
@@ -31,7 +31,7 @@ router.get('/', getAllPamphlets);
  * Get a specific pamphlet by URL key
  * Public route
  */
-router.get('/:url_key', getPamphletByUrlKey);
+router.get('/:url_key', getPamphletByurl_key);
 
 /**
  * POST /api/pamphlets

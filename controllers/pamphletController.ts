@@ -3,7 +3,7 @@ import { SUCCESS } from '../constants/result.constants.js';
 import {
   deletePamphlet,
   getPamphletsWithFilters,
-  pamphletByUrlKey,
+  pamphletByurl_key,
   postPamphlet,
   updatePamphlet,
 } from '../services/pamphlts.services.js';
@@ -45,11 +45,11 @@ export const getAllPamphlets = asyncHandler(
  * @param req - Express Request with id param
  * @param res - Express Response
  */
-export const getPamphletByUrlKey = asyncHandler(
+export const getPamphletByurl_key = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { url_key } = req.params;
 
-    const result = await pamphletByUrlKey(url_key);
+    const result = await pamphletByurl_key(url_key);
 
     successResponse(res, 200, result, 'Pamphlet retrieved successfully.');
   },
@@ -63,9 +63,9 @@ export const getPamphletByUrlKey = asyncHandler(
  */
 export const createPamphlet = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const userId = req.user?.id;
+    const user_id = req.user?.id;
 
-    await postPamphlet(generatePamphletPayload(req), userId);
+    await postPamphlet(generatePamphletPayload(req), user_id);
 
     errorSuccessMessage({
       res,
@@ -85,9 +85,9 @@ export const createPamphlet = asyncHandler(
 export const updatePamphletHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
-    const userId = req.user?.id;
+    const user_id = req.user?.id;
 
-    await updatePamphlet(Number(id), generatePamphletPayload(req), userId);
+    await updatePamphlet(Number(id), generatePamphletPayload(req), user_id);
 
     successResponse(res, 200, null, 'Pamphlet updated successfully.');
   },
@@ -102,9 +102,9 @@ export const updatePamphletHandler = asyncHandler(
 export const deletePamphletHandler = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
-    const userId = req.user?.id;
+    const user_id = req.user?.id;
 
-    await deletePamphlet(Number(id), userId);
+    await deletePamphlet(Number(id), user_id);
 
     errorSuccessMessage({
       res,
